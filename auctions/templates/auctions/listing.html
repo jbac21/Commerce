@@ -1,0 +1,130 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+        {% if error %}
+        <div class="alert alert-danger" role="alert">
+            The entered bid is too low.
+        </div>
+        {% else %}
+        {% endif %}    
+
+        <div class="listingContainer flex">
+
+            <div class="listingFrame xl">
+                <h2>Listing: {{ listing.title }}</h2>
+            </div>
+
+            {% if user.is_authenticated %}
+            <div class="listingFrame xl">
+                {% if watchlist != None %}
+                    <form action="{% url 'watchlist_action' listing.id %}" method="post">            
+                    {% csrf_token %}
+                        <button class="hidden" type="submit"><span class="badge bg-primary">Watchlist</span></button>
+                    </form>
+                {% else %}
+                    <form action="{% url 'watchlist_action' listing.id %}" method="get">
+                    {% csrf_token %}
+                        <button class="hidden" type="submit"><h6><span class="badge bg-secondary">Watchlist</span></h6></button>
+                    </form>
+                {% endif %}
+            </div>
+            {% else %}
+            {% endif %}
+
+            <div class="listingFrame xl">
+                {% if listing.url %}
+                    <img src={{ listing.url }} alt={{ listing.title }}>
+                {% else %}
+                {% endif %}
+                <p>{{ listing.description }}</p>
+            </div>
+        </div>
+
+        <div class="listingContainer flex">
+            <div class="listingFrame xl">
+                {% if listing.highestBid %}
+                    <p class="price">${{ listing.highestBid }}</p>
+                {% else %}
+                    <p class="price">${{ listing.startingBid }}</p>   
+                {% endif %}
+            </div>
+            <div class="listingFrame xl">
+                {% if user.is_authenticated %}
+                    {% if listing.status == 'active' %}
+                        {% if user != listing.seller %}
+                            <form action="{% url 'view_listing' listing.id %}" method="post">
+                            {% csrf_token %}
+                                <div class="form-group">
+                                    {{ form.price }}
+                                </div>  
+                                <div class="form-group"> 
+                                    <input class="btn btn-primary" type="submit" value="Place Bid">
+                                </div>
+                            </form>
+                        {% else %}
+                        <form action="{% url 'terminate_listing' listing.id %}" method="post">
+                            {% csrf_token %}
+                                <div class="form-group"> 
+                                    <input class="btn btn-primary" type="submit" value="Close Auction">
+                                </div>
+                            </form>                
+                        {% endif %}
+                    {% else %}
+                        <p>This auction has been terminated.</p>
+                        {% if listing.buyer and listing.status == 'deactivate' %}
+                            <p>The highest bid by {{ listing.buyer }} totaled ${{ listing.highestBid }}.</p>
+                        {% elif listing.buyer == user and listing.status == 'deactivate' %}
+                            <p>You have won the auction. The highest bid totaled ${{ listing.highestBid }}.</p>
+                        {% endif %}
+                    {% endif %}
+                {% else %}   
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="listingContainer flex">
+            <h3>Details</h3>
+            <ul>
+                <li>Listed by: {{ listing.seller }}</li>
+                {% if category %}
+                    <li>Category: {{ category }}</li>
+                {% else %}
+                {% endif %}
+            </ul>
+        </div>
+
+        <div class="listingContainer flex">
+            <h3>Comments</h3>
+            {% if user.is_authenticated %}
+                <div class="listingFrame xl">
+                    <h6>Add a new comment:</h6>
+                </div>
+                <div class="listingFrame xl">
+                    <form action="{% url 'comment' listing.id %}" method="post">
+                        {% csrf_token %}
+                        <div class="form-group"> 
+                            {{ commentForm.comment }}
+                        </div>
+                        <div class="form-group"> 
+                            <input class="btn btn-primary" type="submit" value="Comment">
+                        </div>
+                    </form>
+                </div>  
+            {% else %}
+            {% endif %}
+
+            {% if comments %}
+            <div class="listingFrame xl">
+            <h6>All comments:</h6>
+            </div>
+                {% for comment in comments %}
+                <div class="listingFrame xl">
+                    <span class="commentTitle">{{ comment.user }}: {{ comment.date }}<br></span>
+                    <span class="commentBody">{{ comment.text }}</span>
+                </div>
+                {% endfor %}
+            {% else %}
+            {% endif %}
+        </div>
+
+{% endblock %}

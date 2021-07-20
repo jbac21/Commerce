@@ -1,0 +1,32 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+
+    <h2>Watchlist</h2>
+
+    {% if watchlists %}
+        {% for watchlist in watchlists%}
+            <a class="aNormal" href="{% url 'view_listing' watchlist.id %}">
+                <div class="listingContainer sm">
+                    <div class="listingFrame imageframe">
+                        {% if watchlist.url %}
+                            <img src="{{ watchlist.url }}" class="imgWatchlist" alt="{{ watchlist.title }}">
+                        {% else %}
+                        {% endif %}
+                    </div>
+                    <div class="listingFrame">        
+                        <h3>{{ watchlist.title }}</h3>
+                        {% if watchlist.highestBid != None %}
+                            <h4>${{ watchlist.highestBid }}</h4>
+                        {% else %}
+                            <h4>${{ watchlist.startingBid }}</h4>
+                        {% endif %}
+                        <p>Status: {{ watchlist.status }}</p>
+                    </div>
+                </div>
+            </a>
+        {% endfor %}
+    {% else %}
+    {% endif %}
+
+{% endblock %}
